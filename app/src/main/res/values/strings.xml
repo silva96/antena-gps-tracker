@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Antenna Gps Tracker</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="welcome_msg">Al habilitar el registro constante de mi ubicación acepto que tidchile haga uso de mi ubicación con fines de investigación</string>
+    <string name="enable_tracking">Habilitar</string>
+    <string name="disable_tracking">Deshabilitar</string>
+
+</resources>
