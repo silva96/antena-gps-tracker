@@ -4,11 +4,14 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import cl.tidchile.antennagpstracker.models.CellConnection;
+import cl.tidchile.antennagpstracker.models.Movement;
 import cl.tidchile.antennagpstracker.util.LocationHelper;
 
 
@@ -40,17 +43,34 @@ public class TrackerService extends Service {
     }
 
     private void getCurrentStatus() {
-        if (mLocationHelper.hasLocationPermission()) {
-            if (mLocationHelper.getCurrentLocation() != null) {
-                double lat = mLocationHelper.getCurrentLocation().getLatitude();
-                double lon = mLocationHelper.getCurrentLocation().getLatitude();
-                String locationTimeStamp = mLocationHelper.getLastUpdateTime();
-                Toast.makeText(getApplicationContext(), "Location: (" + lat + "," + lon + ") on " + locationTimeStamp, Toast.LENGTH_SHORT).show();
+        if (mLocationHelper.hasLocationPermission() && mLocationHelper.getConnectivityHelper().hasPhonePermission()) {
+            Movement m = mLocationHelper.getCurrentMovement();
+            if (m != null) {
+                String toast = "Phone: "+ m.getPhone()+
+                        ",\nLocation: (" + m.getLat() + "," + m.getLon() + ") with " + m.getLocation_accuracy() +"m accuracy\n";
+                int counter = 0;
+                for(CellConnection cc : m.getCell_connections()){
+                    counter++;
+                    if(cc.getNetwork_type().equals("LTE")){
+                        toast += "Connection "+ counter +": LTE|TAC:"+cc.getTac()+"|PCI:"+cc.getPci()+"|CI:"+cc.getCi()+"|SS:"+cc.getSs()+"|SSL:"+cc.getSsl()+"|REGISTERED:"+cc.is_registered()+"\n\n";
+                    }
+                    else if(cc.getNetwork_type().contains("GSM") || cc.getNetwork_type().equals("LTE_OLD") || cc.getNetwork_type().equals("WCDMA")){
+                        toast += "Connection "+ counter +": "+cc.getNetwork_type()+"|LAC:"+cc.getLac()+"|CID:"+cc.getCid()+"|SS:"+cc.getSs()+"|SSL:"+cc.getSsl()+"|REGISTERED:"+cc.is_registered()+"\n\n";
+                    }
+                }
+                //Toast.makeText(getApplicationContext(), toast, Toast.LENGTH_LONG).show();
+                sendBroadcastMessage(toast);
             } else{
                 mLocationHelper.startLocationUpdates();
             }
         }
 
+    }
+
+    private void sendBroadcastMessage(String tv) {
+            Intent intent = new Intent("reportValues");
+            intent.putExtra("result", tv);
+            LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     @Override

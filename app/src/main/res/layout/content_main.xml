@@ -7,28 +7,94 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="16dp"
     android:paddingRight="16dp"
-    android:paddingTop="16dp"    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    android:paddingTop="16dp"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="cl.tidchile.antennagpstracker.activities.MainActivity"
-    tools:showIn="@layout/activity_main"
-    >
+    tools:showIn="@layout/activity_main">
 
-    <TextView
+    <RelativeLayout
+        android:id="@+id/phone_number_wrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/welcome_msg"
-        android:id="@+id/welcome_msg" />
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:visibility="gone">
 
-    <Switch
+        <TextView
+            android:id="@+id/no_phone_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_phone_msg"
+            android:textSize="18sp" />
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_phone_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/no_phone_msg"
+            android:layout_marginTop="16dp">
+
+            <EditText
+                android:id="@+id/phone_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:hint="@string/prompt_phone"
+                android:inputType="number"
+                android:maxLength="8"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textSize="16sp" />
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/save_phone"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/input_layout_phone_number"
+            android:layout_marginTop="16dp"
+            android:text="@string/save_phone" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/switch_wrapper"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/enable_tracking"
-        android:textOn="@string/enable_tracking"
-        android:textOff="@string/disable_tracking"
-        android:id="@+id/tracking_switch"
-        android:layout_below="@+id/welcome_msg"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="18dp"
-        android:checked="false" />
+        android:layout_below="@id/phone_number_wrapper"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/welcome_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/welcome_msg"
+            android:textSize="18sp" />
+
+        <Switch
+            android:id="@+id/tracking_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/welcome_msg"
+            android:layout_marginTop="18dp"
+            android:checked="false"
+            android:text="@string/enable_tracking"
+            android:textOff="@string/disable_tracking"
+            android:textOn="@string/enable_tracking" />
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/tracking_switch">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:id="@+id/result_tv"/>
+        </ScrollView>
+
+    </RelativeLayout>
+
 
 </RelativeLayout>

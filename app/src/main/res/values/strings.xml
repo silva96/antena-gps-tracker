@@ -4,5 +4,8 @@
     <string name="welcome_msg">Al habilitar el registro constante de mi ubicación acepto que tidchile haga uso de mi ubicación con fines de investigación</string>
     <string name="enable_tracking">Habilitar</string>
     <string name="disable_tracking">Deshabilitar</string>
-
+    <string name="no_phone_msg">Tu teléfono no permite obtener la línea asociada de forma programática, por favor ingrésalo a continuación</string>
+    <string name="prompt_phone">Número de teléfono</string>
+    <string name="save_phone">guardar</string>
+    <string name="google_app_id">162171973924</string>
 </resources>

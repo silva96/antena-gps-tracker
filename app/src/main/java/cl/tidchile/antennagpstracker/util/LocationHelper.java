@@ -15,6 +15,11 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
+
+import cl.tidchile.antennagpstracker.models.CellConnection;
+import cl.tidchile.antennagpstracker.models.Movement;
+
 
 public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -23,13 +28,16 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
-    private String mLastUpdateTime;
+    private long mLastUpdateTime;
     private final int GPS_INTERVAL = 1*60*1000;//1 minute
     private boolean hasLocationPermission;
+    private ConnectivityHelper mConnectivityHelper;
+    private Movement mCurrentMovement = null;
 
     public LocationHelper(Context context) {
         this.context = context;
         this.hasLocationPermission = true;
+        mConnectivityHelper = new ConnectivityHelper(context);
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(context)
                     .addConnectionCallbacks(this)
@@ -57,7 +65,7 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
     }
 
     public void startLocationUpdates() {
-
+        mConnectivityHelper.startPhoneUpdates();
         int currentapiVersion = android.os.Build.VERSION.SDK_INT;
         if (currentapiVersion >= Build.VERSION_CODES.M){
             hasLocationPermission = checkLocationPermission();
@@ -80,8 +88,8 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
-        Long tsLong = System.currentTimeMillis()/1000;
-        mLastUpdateTime = tsLong.toString();
+        mLastUpdateTime = System.currentTimeMillis()/1000;
+
     }
 
     protected void createLocationRequest() {
@@ -95,7 +103,20 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
         return mCurrentLocation;
     }
 
-    public String getLastUpdateTime() {
+    public Movement getCurrentMovement(){
+        if (mCurrentLocation != null){
+            double lat = mCurrentLocation.getLatitude();
+            double lon = mCurrentLocation.getLongitude();
+            int accuracy = (int)mCurrentLocation.getAccuracy();
+            ArrayList<CellConnection> cc = mConnectivityHelper.getCell_connections();
+
+            return new Movement(CommonHelper.getPhonePreference(context), lat, lon, accuracy, mLastUpdateTime, cc);
+        }
+        else return null;
+
+    }
+
+    public long getLastUpdateTime() {
         return mLastUpdateTime;
     }
 
@@ -114,5 +135,9 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
             hasLocationPermission = checkLocationPermission();
         }
         return hasLocationPermission;
+    }
+
+    public ConnectivityHelper getConnectivityHelper() {
+        return mConnectivityHelper;
     }
 }
