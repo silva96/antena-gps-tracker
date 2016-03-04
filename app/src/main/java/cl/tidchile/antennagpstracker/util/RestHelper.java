@@ -25,7 +25,7 @@ import retrofit2.http.Path;
 public class RestHelper {
     public static Service service;
     public static String token;
-    public static final String BASE_URL = "http://172.16.1.25:8000/";
+    public static final String BASE_URL = "http://emod-zorzal.tidnode.cl/";
 
     public interface Service {
         @POST("api-auth/token/")

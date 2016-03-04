@@ -29,7 +29,7 @@ public class TrackerService extends Service {
     private Handler mHandler;
     private Runnable update_runnable;
     private Runnable send_runnable;
-    private final int SEND_INTERVAL = 20 * 1 * 1000;//5 minutes
+    private final int SEND_INTERVAL = 5 * 60 * 1000;//5 minutes
     private final int INTERVAL = 5 * 1000;
 
     private String TAG = "GPS-ANTENNA Tracking service";

@@ -11,6 +11,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -20,6 +21,7 @@ import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -62,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
         if (currentapiVersion >= Build.VERSION_CODES.M) {
             mPermissionsGranted = false;
             checkForPermissions();
-        }else{
+        } else {
             setPhoneNumber();
         }
 
@@ -104,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
         return false;
     }
 
-    private void checkForPermissions() {
+    private boolean checkForPermissions() {
         int location_permission = ContextCompat.checkSelfPermission(MainActivity.this,
                 Manifest.permission.ACCESS_FINE_LOCATION);
         int sms_permission = ContextCompat.checkSelfPermission(MainActivity.this,
@@ -125,10 +127,16 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
 
         if (!permissionsNeeded.isEmpty()) {
             ActivityCompat.requestPermissions(this, permissionsNeeded.toArray(new String[permissionsNeeded.size()]), REQUEST_ID_MULTIPLE_PERMISSIONS);
-            return;
+            return false;
         }
-        mPermissionsGranted=true;
-        setPhoneNumber();
+        mPermissionsGranted = true;
+        if (TextUtils.isEmpty(CommonHelper.getPhonePreference(this))) {
+            setPhoneNumber();
+            return false;
+        } else {
+            setPhoneNumber();
+            return true;
+        }
     }
 
     @Override
@@ -145,7 +153,15 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
                 }
             } else {
                 buttonView.setChecked(false);
-                checkForPermissions();
+                Toast.makeText(this, "Por favor acepta los permisos e intenta nuevamente", Toast.LENGTH_LONG).show();
+                Handler h = new Handler();
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        checkForPermissions();
+                    }
+                };
+                h.postDelayed(r, 2000);
             }
         } else {
             buttonView.setText(sw.getTextOn());
@@ -170,11 +186,10 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
                         perms.put(permissions[i], grantResults[i]);
                     }
                     if (perms.get(Manifest.permission.READ_SMS) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-                                && perms.get(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+                            && perms.get(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                            && perms.get(Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
                         mPermissionsGranted = true;
-                    }
-                    else {
+                    } else {
                         mPermissionsGranted = false;
                     }
                     setPhoneNumber();
@@ -184,7 +199,7 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
 
     private void setPhoneNumber() {
         if (CommonHelper.getPhonePreference(this).equals("")) {
-            if(mPermissionsGranted)
+            if (mPermissionsGranted)
                 phoneNumber = mTelephonyManager.getLine1Number();
             else phoneNumber = "";
             if (TextUtils.isEmpty(phoneNumber)) {
@@ -196,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
                             mPhoneEditText.setError("Ingresa un número válido");
                         } else {
                             mPhoneEditText.setError(null);
-                            CommonHelper.setPhonePreference(MainActivity.this, "569"+mPhoneEditText.getText().toString());
+                            CommonHelper.setPhonePreference(MainActivity.this, "569" + mPhoneEditText.getText().toString());
                             Toast.makeText(MainActivity.this, "Teléfono guardado", Toast.LENGTH_SHORT).show();
                             //animate out
                             mPhoneEditTextWrapper.animate().translationY(0).alpha(0.0f).setListener(new AnimatorListenerAdapter() {
@@ -208,6 +223,8 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
                                     mSwitchWrapper.setVisibility(View.VISIBLE);
                                     mSwitchWrapper.setAlpha(0.0f);
                                     mSwitchWrapper.animate().translationY(mSwitchWrapper.getHeight()).alpha(1.0f);
+                                    InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    inputManager.hideSoftInputFromWindow(mPhoneEditText.getWindowToken(), 0);
                                 }
                             });
                         }
@@ -218,10 +235,13 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
             } else {
                 CommonHelper.setPhonePreference(this, phoneNumber);
                 Toast.makeText(MainActivity.this, "Teléfono " + phoneNumber + " guardado", Toast.LENGTH_SHORT).show();
+                InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputManager.hideSoftInputFromWindow(mPhoneEditText.getWindowToken(), 0);
                 mSwitchWrapper.setVisibility(View.VISIBLE);
             }
-        }
-        else{
+        } else {
+            InputMethodManager inputManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(mPhoneEditText.getWindowToken(), 0);
             mSwitchWrapper.setVisibility(View.VISIBLE);
         }
     }
