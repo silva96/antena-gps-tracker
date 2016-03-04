@@ -133,6 +133,7 @@ public class TrackerService extends Service {
     public void onDestroy() {
         Log.d("Service", "onDestroy");
         mHandler.removeCallbacks(update_runnable);
+        mHandler.removeCallbacks(send_runnable);
         Toast.makeText(this, TAG + " terminated", Toast.LENGTH_SHORT).show();
         mLocationHelper.disconnectApiClient();
     }
