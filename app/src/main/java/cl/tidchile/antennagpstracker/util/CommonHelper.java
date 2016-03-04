@@ -11,6 +11,8 @@ public class CommonHelper {
     public static final String SETTINGS_NAME = "mysettings";
     public static final String TOKEN_PREFERENCE = "API_TOKEN";
     public static final String PHONE_PREFERENCE = "PHONE";
+    public static final String USERNAME = "guarisnake";
+    public static final String PASSWORD = "lacachaelaespasandiacala";
 
     public static void setPhonePreference(Context context, String phone){
         SharedPreferences.Editor editor = context.getSharedPreferences(

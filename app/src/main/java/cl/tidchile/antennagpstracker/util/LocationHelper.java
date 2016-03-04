@@ -29,7 +29,7 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
     private long mLastUpdateTime;
-    private final int GPS_INTERVAL = 1*60*1000;//1 minute
+    private final int GPS_INTERVAL = 1*20*1000;//20 secs
     private boolean hasLocationPermission;
     private ConnectivityHelper mConnectivityHelper;
     private Movement mCurrentMovement = null;
@@ -97,6 +97,7 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
         mLocationRequest.setInterval(GPS_INTERVAL);
         mLocationRequest.setFastestInterval(GPS_INTERVAL);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setSmallestDisplacement(20);
     }
 
     public Location getCurrentLocation() {
