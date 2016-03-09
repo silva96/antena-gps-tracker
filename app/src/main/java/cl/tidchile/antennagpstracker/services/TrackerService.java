@@ -15,7 +15,7 @@ import cl.tidchile.antennagpstracker.models.CellConnection;
 import cl.tidchile.antennagpstracker.models.Movement;
 import cl.tidchile.antennagpstracker.models.Token;
 import cl.tidchile.antennagpstracker.util.CommonHelper;
-import cl.tidchile.antennagpstracker.util.LocationHelper;
+import cl.tidchile.antennagpstracker.util.ConnectivityHelper;
 import cl.tidchile.antennagpstracker.util.RestHelper;
 import cl.tidchile.antennagpstracker.util.rest_request_models.PostMovementRequest;
 import cl.tidchile.antennagpstracker.util.rest_response_models.PostMovementResponse;
@@ -33,7 +33,8 @@ public class TrackerService extends Service {
     private final int INTERVAL = 5 * 1000;
 
     private String TAG = "GPS-ANTENNA Tracking service";
-    private LocationHelper mLocationHelper;
+    //private LocationHelper mLocationHelper;
+    private ConnectivityHelper mConnectivityHelper;
 
     @Override
     public void onCreate() {
@@ -52,14 +53,15 @@ public class TrackerService extends Service {
                 mHandler.postDelayed(send_runnable, SEND_INTERVAL);
             }
         };
-        mLocationHelper = new LocationHelper(getApplicationContext());
+        //mLocationHelper = new LocationHelper(getApplicationContext());
+        mConnectivityHelper = new ConnectivityHelper(getApplicationContext());
 
 
     }
 
     private void updateUiWithCurrentStatus() {
-        if (mLocationHelper.hasLocationPermission() && mLocationHelper.getConnectivityHelper().hasPhonePermission()) {
-            Movement m = mLocationHelper.getCurrentMovement();
+        if (mConnectivityHelper.hasPhonePermission() && mConnectivityHelper.getLocationHelper().hasLocationPermission()) {
+            Movement m = mConnectivityHelper.getCurrentMovement();
             if (m != null) {
                 String message = "Phone: " + m.getPhone_number() +
                         ",\nLocation: (" + m.getLat() + "," + m.getLon() + ") with " + m.getLocation_accuracy() + "m accuracy\n";
@@ -68,21 +70,20 @@ public class TrackerService extends Service {
                     counter++;
                     if (cc.getNetwork_type().equals("LTE")) {
                         message += "Connection " + counter + ": LTE|TAC:" + cc.getTac() + "|PCI:" + cc.getPci() + "|CI:" + cc.getCi() + "|SS:" + cc.getSs() + "|SSL:" + cc.getSsl() + "|REGISTERED:" + cc.is_registered() + "\n\n";
-                    } else if (cc.getNetwork_type().contains("GSM") || cc.getNetwork_type().equals("LTE_OLD") || cc.getNetwork_type().equals("WCDMA")) {
+                    } else if (cc.getNetwork_type().contains("GSM") || cc.getNetwork_type().equals("LTE_OLD") || cc.getNetwork_type().contains("UMTS")) {
                         message += "Connection " + counter + ": " + cc.getNetwork_type() + "|LAC:" + cc.getLac() + "|CID:" + cc.getCid() + "|SS:" + cc.getSs() + "|SSL:" + cc.getSsl() + "|REGISTERED:" + cc.is_registered() + "\n\n";
                     }
                 }
-                //Toast.makeText(getApplicationContext(), toast, Toast.LENGTH_LONG).show();
                 sendBroadcastMessage(message);
             } else {
-                mLocationHelper.startLocationUpdates();
+                mConnectivityHelper.startPhoneUpdates();
             }
         }
 
     }
 
     private void sendData() {
-        if (mLocationHelper.hasLocationPermission() && mLocationHelper.getConnectivityHelper().hasPhonePermission()) {
+        if (mConnectivityHelper.hasPhonePermission() && mConnectivityHelper.getLocationHelper().hasLocationPermission()) {
             if (RestHelper.token == null) {
                 HashMap<String, String> params = new HashMap<String, String>();
                 params.put("username", CommonHelper.USERNAME);
@@ -90,16 +91,15 @@ public class TrackerService extends Service {
                 Call<Token> call = RestHelper.getService().getUserToken(params);
                 call.enqueue(tokenCallback());
             } else {
-                Movement m = mLocationHelper.getCurrentMovement();
+                ArrayList<Movement> ma = mConnectivityHelper.getStoredMovements();
+                Movement m = mConnectivityHelper.getCurrentMovement();
                 //for now we send the last each time
-                if (m != null) {
-                    ArrayList<Movement> ma = new ArrayList<>();
-                    ma.add(m);
+                if (ma != null && ma.size() > 0) {
                     PostMovementRequest r = new PostMovementRequest(ma);
                     Call<PostMovementResponse> call = RestHelper.getService().postMovements(CommonHelper.getPhonePreference(getApplicationContext()), r);
                     call.enqueue(postMovementsResponseCallback());
                 } else {
-                    mLocationHelper.startLocationUpdates();
+                    mConnectivityHelper.startPhoneUpdates();
                 }
             }
         }
@@ -135,7 +135,7 @@ public class TrackerService extends Service {
         mHandler.removeCallbacks(update_runnable);
         mHandler.removeCallbacks(send_runnable);
         Toast.makeText(this, TAG + " terminated", Toast.LENGTH_SHORT).show();
-        mLocationHelper.disconnectApiClient();
+        mConnectivityHelper.getLocationHelper().disconnectApiClient();
     }
 
     public Callback<Token> tokenCallback() {
@@ -168,8 +168,10 @@ public class TrackerService extends Service {
             public void onResponse(Call<PostMovementResponse> call, Response<PostMovementResponse> response) {
                 if (response.isSuccess()) {
                     // tasks available
-                    if (response.body().status != null && response.body().status.equals("ok"))
-                        Toast.makeText(getApplicationContext(), "GPS-Antenna data sent", Toast.LENGTH_LONG).show();
+                    if (response.body().status != null && response.body().status.equals("ok")) {
+                        Toast.makeText(getApplicationContext(), "GPS-Antenna data sent ("+mConnectivityHelper.getStoredMovements().size()+" items)", Toast.LENGTH_LONG).show();
+                        mConnectivityHelper.clearStoredMovements();
+                    }
                     else if (response.body().error != null) {
                         Toast.makeText(getApplicationContext(), "Something went wrong while sending GPS-Antenna data, error: " +response.body().error, Toast.LENGTH_LONG).show();
                     }
