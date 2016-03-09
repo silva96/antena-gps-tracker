@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -147,9 +148,16 @@ public class MainActivity extends AppCompatActivity implements Switch.OnCheckedC
                 if (TextUtils.isEmpty(CommonHelper.getPhonePreference(this))) {
                     Toast.makeText(this, "Por favor ingresa tu teléfono antes de habilitar el servicio", Toast.LENGTH_LONG).show();
                 } else {
-                    buttonView.setText(sw.getTextOff());
-                    Intent intent = new Intent(this, TrackerService.class);
-                    startService(intent);
+                    if (!CommonHelper.isGPSEnabled(MainActivity.this)) {
+                        Intent onGPS = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                        startActivity(onGPS);
+                        buttonView.setChecked(false);
+                    } else {
+                        buttonView.setText(sw.getTextOff());
+                        Intent intent = new Intent(this, TrackerService.class);
+                        startService(intent);
+                    }
+
                 }
             } else {
                 buttonView.setChecked(false);

@@ -33,6 +33,7 @@ public class ConnectivityHelper extends PhoneStateListener {
     private ArrayList<CellConnection> cell_connections = new ArrayList<>();
     private long mLastUpdateTime;
     private ArrayList<Movement> movements = new ArrayList<>();
+    private Movement mCurrentMovement = null;
 
     public ConnectivityHelper(Context context) {
         this.context = context;
@@ -77,9 +78,12 @@ public class ConnectivityHelper extends PhoneStateListener {
             double lon = mLocationHelper.getCurrentLocation().getLongitude();
             int accuracy = (int) mLocationHelper.getCurrentLocation().getAccuracy();
             ArrayList<CellConnection> cc = getCell_connections();
-
-            return new Movement(CommonHelper.getPhonePreference(context), lat, lon, accuracy, mLastUpdateTime, cc);
-        } else return null;
+            mCurrentMovement = new Movement(CommonHelper.getPhonePreference(context), lat, lon, accuracy, mLastUpdateTime, cc);
+            return mCurrentMovement;
+        } else {
+            mCurrentMovement = null;
+            return mCurrentMovement;
+        }
 
     }
 
@@ -142,7 +146,6 @@ public class ConnectivityHelper extends PhoneStateListener {
         }
         Movement m = getCurrentMovement();
         if (m != null) movements.add(m);
-
     }
 
     private ArrayList<CellConnection> getCell_connections() {

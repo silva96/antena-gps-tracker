@@ -1,6 +1,7 @@
 package cl.tidchile.antennagpstracker.services;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
@@ -31,9 +32,9 @@ public class TrackerService extends Service {
     private Runnable send_runnable;
     private final int SEND_INTERVAL = 5 * 60 * 1000;//5 minutes
     private final int INTERVAL = 5 * 1000;
+    private boolean gpsEnabled = false;
 
     private String TAG = "GPS-ANTENNA Tracking service";
-    //private LocationHelper mLocationHelper;
     private ConnectivityHelper mConnectivityHelper;
 
     @Override
@@ -41,9 +42,11 @@ public class TrackerService extends Service {
         super.onCreate();
         Log.d("Service", "onCreate");
         mHandler = new Handler();
+        gpsEnabled = CommonHelper.isGPSEnabled(getApplicationContext());
         update_runnable = new Runnable() {
             public void run() {
                 updateUiWithCurrentStatus();
+                updateGpsStatus();
                 mHandler.postDelayed(update_runnable, INTERVAL);
             }
         };
@@ -57,6 +60,18 @@ public class TrackerService extends Service {
         mConnectivityHelper = new ConnectivityHelper(getApplicationContext());
 
 
+    }
+
+    private void updateGpsStatus() {
+        if(!gpsEnabled && CommonHelper.isGPSEnabled(getApplicationContext())){
+            //if it was disabled and now is enabled
+            gpsEnabled = true;
+            mConnectivityHelper.getLocationHelper().startLocationUpdates();
+        }
+        else if(gpsEnabled && !CommonHelper.isGPSEnabled(getApplicationContext())){
+            sendBroadcastMessage("El GPS está desactivado");
+            gpsEnabled = false;
+        }
     }
 
     private void updateUiWithCurrentStatus() {

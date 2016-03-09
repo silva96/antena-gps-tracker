@@ -2,6 +2,7 @@ package cl.tidchile.antennagpstracker.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
 
 /**
  * Created by benjamin on 3/3/16.
@@ -24,6 +25,12 @@ public class CommonHelper {
         SharedPreferences settings = context.getSharedPreferences(
                 CommonHelper.SETTINGS_NAME, context.MODE_PRIVATE);
         return settings.getString(PHONE_PREFERENCE, "");
+    }
+
+    public static boolean isGPSEnabled (Context context){
+        LocationManager locationManager = (LocationManager)
+                context.getSystemService(Context.LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
 }

@@ -15,11 +15,6 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
-import java.util.ArrayList;
-
-import cl.tidchile.antennagpstracker.models.CellConnection;
-import cl.tidchile.antennagpstracker.models.Movement;
-
 
 public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
@@ -28,7 +23,7 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
-    private final int GPS_INTERVAL = 1*5*1000;//5 secs
+    private final int GPS_INTERVAL = 1 * 5 * 1000;//5 secs
     private boolean hasLocationPermission;
 
     public LocationHelper(Context context) {
@@ -62,17 +57,16 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
 
     public void startLocationUpdates() {
         int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-        if (currentapiVersion >= Build.VERSION_CODES.M){
+        if (currentapiVersion >= Build.VERSION_CODES.M) {
             hasLocationPermission = checkLocationPermission();
             if (!hasLocationPermission) {
                 Toast.makeText(context, "The app has no location permission", Toast.LENGTH_SHORT).show();
-            }
-            else{
+            } else {
                 createLocationRequest();
                 LocationServices.FusedLocationApi.requestLocationUpdates(
                         mGoogleApiClient, mLocationRequest, this);
             }
-        } else{
+        } else {
             createLocationRequest();
             LocationServices.FusedLocationApi.requestLocationUpdates(
                     mGoogleApiClient, mLocationRequest, this);
@@ -83,8 +77,6 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
-
-
     }
 
     protected void createLocationRequest() {
@@ -100,15 +92,16 @@ public class LocationHelper implements GoogleApiClient.ConnectionCallbacks,
     }
 
 
-    public void disconnectApiClient(){
+    public void disconnectApiClient() {
         mGoogleApiClient.disconnect();
     }
 
-    private boolean checkLocationPermission(){
+    private boolean checkLocationPermission() {
         int coarse_permission = ContextCompat.checkSelfPermission(context,
                 Manifest.permission.ACCESS_FINE_LOCATION);
         return coarse_permission == PackageManager.PERMISSION_GRANTED;
     }
+
     public boolean hasLocationPermission() {
         int currentapiVersion = android.os.Build.VERSION.SDK_INT;
         if (currentapiVersion >= Build.VERSION_CODES.M) {
