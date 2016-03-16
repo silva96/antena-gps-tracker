@@ -146,6 +146,8 @@ public class ConnectivityHelper extends PhoneStateListener {
         }
         Movement m = getCurrentMovement();
         if (m != null) movements.add(m);
+        cell_connections.clear();
+
     }
 
     private ArrayList<CellConnection> getCell_connections() {

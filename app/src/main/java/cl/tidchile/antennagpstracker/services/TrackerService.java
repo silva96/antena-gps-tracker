@@ -106,8 +106,6 @@ public class TrackerService extends Service {
                 call.enqueue(tokenCallback());
             } else {
                 ArrayList<Movement> ma = mConnectivityHelper.getStoredMovements();
-                Movement m = mConnectivityHelper.getCurrentMovement();
-                //for now we send the last each time
                 if (ma != null && ma.size() > 0) {
                     PostMovementRequest r = new PostMovementRequest(ma);
                     Call<PostMovementResponse> call = RestHelper.getService().postMovements(CommonHelper.getPhonePreference(getApplicationContext()), r);
