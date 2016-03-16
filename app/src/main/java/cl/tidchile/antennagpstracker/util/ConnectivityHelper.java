@@ -30,7 +30,7 @@ public class ConnectivityHelper extends PhoneStateListener {
     private TelephonyManager mTelephonyManager;
     private Context context;
     private boolean hasPhonePermission = true;
-    private ArrayList<CellConnection> cell_connections = new ArrayList<>();
+    private ArrayList<CellConnection> mLastCellConnections = new ArrayList<>();
     private long mLastUpdateTime;
     private ArrayList<Movement> movements = new ArrayList<>();
     private Movement mCurrentMovement = null;
@@ -72,13 +72,12 @@ public class ConnectivityHelper extends PhoneStateListener {
         return hasPhonePermission;
     }
 
-    public Movement getCurrentMovement() {
+    public Movement getCurrentMovement(ArrayList<CellConnection> cc) {
         if (mLocationHelper.getCurrentLocation() != null) {
             double lat = mLocationHelper.getCurrentLocation().getLatitude();
             double lon = mLocationHelper.getCurrentLocation().getLongitude();
             int accuracy = (int) mLocationHelper.getCurrentLocation().getAccuracy();
-            ArrayList<CellConnection> cc = getCell_connections();
-            mCurrentMovement = new Movement(CommonHelper.getPhonePreference(context), lat, lon, accuracy, mLastUpdateTime, cc);
+            mCurrentMovement = new Movement(lat, lon, accuracy, mLastUpdateTime, cc);
             return mCurrentMovement;
         } else {
             mCurrentMovement = null;
@@ -93,7 +92,7 @@ public class ConnectivityHelper extends PhoneStateListener {
         //each time location of any antenna changes, get all new connections.
         List<CellInfo> cellInfoList = mTelephonyManager.getAllCellInfo();
         mLastUpdateTime = System.currentTimeMillis() / 1000;
-        cell_connections.clear();
+        ArrayList<CellConnection> cell_connections = new ArrayList<>();
         if (cellInfoList != null) {
             Log.d("CELLINFO", cellInfoList.size() + "");
             for (CellInfo cellInfo : cellInfoList) {
@@ -144,14 +143,15 @@ public class ConnectivityHelper extends PhoneStateListener {
             CellConnection cc = new CellConnection(cid, lac, is_registered, network_type);
             cell_connections.add(cc);
         }
-        Movement m = getCurrentMovement();
-        if (m != null) movements.add(m);
-        cell_connections.clear();
+        if(cell_connections.size()>0){
+            Movement m = getCurrentMovement(cell_connections);
+            if (m != null) movements.add(m);
+        }
 
     }
 
-    private ArrayList<CellConnection> getCell_connections() {
-        return cell_connections;
+    public ArrayList<CellConnection> getLastCellConnections() {
+        return mLastCellConnections;
     }
 
     public LocationHelper getLocationHelper() {

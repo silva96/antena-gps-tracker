@@ -6,15 +6,13 @@ import java.util.ArrayList;
  * Created by benjamin on 3/3/16.
  */
 public class Movement{
-    private String phone_number;
     private double lat;
     private double lon;
     private int location_accuracy;
     private long timestamp;
     private ArrayList<CellConnection> cell_connections= new ArrayList<>();
 
-    public Movement(String phone_number, double lat, double lon, int location_accuracy, long timestamp, ArrayList<CellConnection> cell_connections) {
-        this.phone_number = phone_number;
+    public Movement(double lat, double lon, int location_accuracy, long timestamp, ArrayList<CellConnection> cell_connections) {
         this.lat = lat;
         this.lon = lon;
         this.location_accuracy = location_accuracy;
@@ -23,13 +21,7 @@ public class Movement{
 
     }
 
-    public String getPhone_number() {
-        return phone_number;
-    }
 
-    public void setPhone_number(String phone_number) {
-        this.phone_number = phone_number;
-    }
 
     public double getLat() {
         return lat;

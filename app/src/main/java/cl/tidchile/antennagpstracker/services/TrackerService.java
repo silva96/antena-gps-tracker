@@ -75,23 +75,31 @@ public class TrackerService extends Service {
 
     private void updateUiWithCurrentStatus() {
         if (mConnectivityHelper.hasPhonePermission() && mConnectivityHelper.getLocationHelper().hasLocationPermission()) {
-            Movement m = mConnectivityHelper.getCurrentMovement();
-            if (m != null) {
-                String message = "Phone: " + m.getPhone_number() +
-                        ",\nLocation: (" + m.getLat() + "," + m.getLon() + ") with " + m.getLocation_accuracy() + "m accuracy\n";
-                int counter = 0;
-                for (CellConnection cc : m.getCell_connections()) {
-                    counter++;
-                    if (cc.getNetwork_type().equals("LTE")) {
-                        message += "Connection " + counter + ": LTE|TAC:" + cc.getTac() + "|PCI:" + cc.getPci() + "|CI:" + cc.getCi() + "|SS:" + cc.getSs() + "|SSL:" + cc.getSsl() + "|REGISTERED:" + cc.is_registered() + "\n\n";
-                    } else if (cc.getNetwork_type().contains("GSM") || cc.getNetwork_type().equals("LTE_OLD") || cc.getNetwork_type().contains("UMTS")) {
-                        message += "Connection " + counter + ": " + cc.getNetwork_type() + "|LAC:" + cc.getLac() + "|CID:" + cc.getCid() + "|SS:" + cc.getSs() + "|SSL:" + cc.getSsl() + "|REGISTERED:" + cc.is_registered() + "\n\n";
+            ArrayList<Movement> storedMovements = mConnectivityHelper.getStoredMovements();
+            if(storedMovements != null && storedMovements.size()>0){
+                Movement m = mConnectivityHelper.getStoredMovements().get(mConnectivityHelper.getStoredMovements().size()-1);
+                if (m != null) {
+                    String message = "Phone: " + CommonHelper.getPhonePreference(getApplicationContext()) +
+                            ",\nLocation: (" + m.getLat() + "," + m.getLon() + ") with " + m.getLocation_accuracy() + "m accuracy\n";
+                    int counter = 0;
+                    for (CellConnection cc : m.getCell_connections()) {
+                        counter++;
+                        if (cc.getNetwork_type().equals("LTE")) {
+                            message += "Connection " + counter + ": LTE|TAC:" + cc.getTac() + "|PCI:" + cc.getPci() + "|CI:" + cc.getCi() + "|SS:" + cc.getSs() + "|SSL:" + cc.getSsl() + "|REGISTERED:" + cc.is_registered() + "\n\n";
+                        } else if (cc.getNetwork_type().contains("GSM") || cc.getNetwork_type().equals("LTE_OLD") || cc.getNetwork_type().contains("UMTS")) {
+                            message += "Connection " + counter + ": " + cc.getNetwork_type() + "|LAC:" + cc.getLac() + "|CID:" + cc.getCid() + "|SS:" + cc.getSs() + "|SSL:" + cc.getSsl() + "|REGISTERED:" + cc.is_registered() + "\n\n";
+                        }
                     }
+                    Log.d(TAG, "UPDATING UI");
+                    sendBroadcastMessage(message);
+                } else {
+                    mConnectivityHelper.startPhoneUpdates();
                 }
-                sendBroadcastMessage(message);
-            } else {
+            }
+            else {
                 mConnectivityHelper.startPhoneUpdates();
             }
+
         }
 
     }
@@ -99,7 +107,7 @@ public class TrackerService extends Service {
     private void sendData() {
         if (mConnectivityHelper.hasPhonePermission() && mConnectivityHelper.getLocationHelper().hasLocationPermission()) {
             if (RestHelper.token == null) {
-                HashMap<String, String> params = new HashMap<String, String>();
+                HashMap<String, String> params = new HashMap<>();
                 params.put("username", CommonHelper.USERNAME);
                 params.put("password", CommonHelper.PASSWORD);
                 Call<Token> call = RestHelper.getService().getUserToken(params);
