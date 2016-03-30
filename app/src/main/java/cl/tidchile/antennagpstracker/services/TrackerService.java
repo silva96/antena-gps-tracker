@@ -203,7 +203,7 @@ public class TrackerService extends Service {
             @Override
             public void onFailure(Call<PostMovementResponse> call, Throwable t) {
                 Log.d(TAG, t.getMessage());
-                Toast.makeText(getApplicationContext(), "Something went wrong while sending GPS-Antenna data", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Something went wrong while sending GPS-Antenna data, error: "+t.getMessage(), Toast.LENGTH_LONG).show();
             }
         };
     }
